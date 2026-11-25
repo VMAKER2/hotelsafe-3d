@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HotelSafe. — ระบบความปลอดภัยอิเล็กทรอนิกส์ในโรงแรม 3D | Hotel Electronic Security 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body data-view="overview" data-lang="th">
+  <!-- Subtle Initial Loader -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loader-inner">
+      <div class="loader-brand">HotelSafe<span>.</span></div>
+      <div class="loader-track"><div class="loader-fill"></div></div>
+      <p id="loaderText" class="loader-sub">กำลังโหลดโมเดลโรงแรม 3D และอุปกรณ์ความปลอดภัย...</p>
+    </div>
+  </div>
+
+  <!-- Main Editorial Studio Card Frame -->
+  <div class="studio-backdrop">
+    <div class="app-frame">
+      <!-- Top Minimalist Navigation Bar -->
+      <header class="top-bar">
+        <div class="top-left">
+          <button id="brandBtn" class="brand-logo" type="button" aria-label="HotelSafe Home">
+            HotelSafe<span>.</span>
+          </button>
+          <button id="backOverviewBtn" class="back-zones-btn hidden" type="button">
+            <span class="back-arrow">←</span>
+            <span data-i18n="backAllZones">ทุกโซน</span>
+          </button>
+        </div>
+
+        <!-- Center Navigation: Overview Links OR Zone Switcher Pills -->
+        <nav id="overviewNav" class="overview-nav" aria-label="Primary Navigation">
+          <button type="button" class="nav-link active" id="navOverviewBtn" data-i18n="navOverview">ภาพรวม</button>
+          <button type="button" class="nav-link" id="navZonesBtn" data-i18n="navZones">โซนพื้นที่ (4)</button>
+          <button type="button" class="nav-link" id="navStandardsBtn" data-i18n="navStandards">มาตรฐานติดตั้ง</button>
+        </nav>
+
+        <nav id="zonePillsNav" class="zone-pills-bar hidden" aria-label="Zone Selector"></nav>
+
+        <!-- Right Controls: Language Switcher + Catalog + Primary CTA -->
+        <div class="top-right">
+          <div class="lang-toggle" role="group" aria-label="Language Switcher">
+            <button type="button" id="langThBtn" class="lang-btn active" data-lang-btn="th">ไทย</button>
+            <button type="button" id="langEnBtn" class="lang-btn" data-lang-btn="en">EN</button>
+          </div>
+
+          <button type="button" id="openCatalogTopBtn" class="catalog-link-btn" data-i18n="deviceCatalog">
+            คลังอุปกรณ์จริง
+          </button>
+
+          <button type="button" id="exploreTopBtn" class="btn btn-dark btn-compact" data-i18n="explore3D">
+            สำรวจ 3D
+          </button>
+        </div>
+      </header>
+
+      <!-- Workspace Body: Transitions seamlessly between Overview & Zone Split View -->
+      <main class="workspace-body">
+        <!-- LEFT COLUMN (Overview Mode Only): Timescope-inspired Minimal Hero Copy -->
+        <section id="heroColumn" class="hero-column" aria-labelledby="heroHeading">
+          <div class="hero-eyebrow" data-i18n="heroEyebrow">
+            วิชาความปลอดภัยในอิเล็กทรอนิกส์ • โครงงานระบบโรงแรม
+          </div>
+          <h1 id="heroHeading" class="hero-title" data-i18n="heroTitle">
+            ระบบความปลอดภัยอิเล็กทรอนิกส์ในโรงแรม 3D
+          </h1>
+          <p class="hero-description" data-i18n="heroSubtitle">
+            สำรวจการจัดวางเซ็นเซอร์ กล้องวงจรปิด ระบบคีย์การ์ด และระบบป้องกันอัคคีภัยตามมาตรฐาน วสท. และ NFPA 72 พร้อมภาพถ่ายตัวอุปกรณ์จริงในแต่ละห้อง
+          </p>
+
+          <div class="hero-cta-row">
+            <button type="button" id="enterLobbyBtn" class="btn btn-dark" data-i18n="btnEnterLobby">
+              เข้าดูโซนล็อบบี้
+            </button>
+            <button type="button" id="openCatalogHeroBtn" class="btn btn-outline" data-i18n="btnViewDevices">
+              ดูตัวอุปกรณ์จริงทั้งหมด
+            </button>
+          </div>
+
+          <div class="hero-zones-block">
+            <div class="hero-zones-caption" data-i18n="selectZonePrompt">
+              คลิกเลือกโซนจากปุ่มด้านล่าง หรือคลิกหมายเลขบนอาคาร 3D
+            </div>
+            <div id="heroZoneGrid" class="hero-zone-grid"></div>
+          </div>
+        </section>
+
+        <!-- 3D INTERACTIVE STAGE (Right 60% in Overview / Left 62% in Zone View) -->
+        <section id="stageSection" class="stage-section" aria-label="3D Architectural View">
+          <div id="canvasHost" class="canvas-host"></div>
+
+          <!-- Projected 2D Callout Pins Over 3D Scene -->
+          <div id="pinsContainer" class="pins-container"></div>
+
+          <!-- Minimal Stage Controls (Bottom Bar inside 3D Viewport) -->
+          <div class="stage-toolbar">
+            <div id="stageHint" class="stage-hint" data-i18n="stageHintOverview">
+              ลากเมาส์หมุน 360° • เลื่อนซูม • คลิกหมุด 01–04 เพื่อผ่าดูภายในห้อง
+            </div>
+            <div class="stage-actions">
+              <button type="button" id="toggleFovBtn" class="stage-tool-btn hidden" data-i18n="btnToggleFov">
+                รัศมีตรวจจับ
+              </button>
+              <button type="button" id="resetCamBtn" class="stage-tool-btn" data-i18n="btnResetCam">
+                รีเซ็ตมุมกล้อง
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT INSPECTOR CARD (Zone View Only — 38% Width, Crisp White Card) -->
+        <aside id="inspectorCard" class="inspector-card hidden" aria-live="polite">
+          <div class="inspector-scroll">
+            <div class="insp-meta-row">
+              <span id="inspBreadcrumb" class="insp-eyebrow">LOBBY &amp; CHECK-IN • DEVICE 01 / 05</span>
+              <span id="inspCategoryTag" class="insp-cat-pill">CCTV</span>
+            </div>
+
+            <h2 id="inspDeviceName" class="insp-title">IP Dome CCTV Camera</h2>
+            <p id="inspModelSample" class="insp-model-ref"></p>
+
+            <!-- Real-World Physical Hardware Studio Photo -->
+            <div class="real-hw-showcase" id="openLightboxTrigger" role="button" tabindex="0" title="คลิกเพื่อขยายดูภาพอุปกรณ์จริง">
+              <img id="inspHardwareImg" src="" alt="Real Security Device Hardware" class="real-hw-img" />
+              <div class="real-hw-badge">
+                <span class="real-hw-dot"></span>
+                <span data-i18n="realDeviceBadge">ภาพตัวอุปกรณ์จริง</span>
+              </div>
+              <span class="zoom-icon-pill" aria-hidden="true">⤢</span>
+            </div>
+
+            <!-- Numbered Device Chips (Visible Above the Fold!) -->
+            <div class="insp-chips-section">
+              <div class="insp-sub-heading" data-i18n="labelSelectPin">เลือกจุดติดตั้งในโซนนี้</div>
+              <div id="inspDeviceChips" class="insp-chips-wrap"></div>
+            </div>
+
+            <!-- Placement & Function Details -->
+            <div class="insp-spec-stack">
+              <div class="insp-spec-block">
+                <div class="insp-spec-header">
+                  <h3 class="insp-spec-label" data-i18n="labelPlacement">ตำแหน่งการจัดวาง (Placement)</h3>
+                  <span id="inspStandardCode" class="insp-code-tag">NFPA 72 / วสท.</span>
+                </div>
+                <p id="inspPlacementText" class="insp-spec-body"></p>
+              </div>
+
+              <div class="insp-spec-block">
+                <h3 class="insp-spec-label" data-i18n="labelFunction">หน้าที่และหลักการทำงานอิเล็กทรอนิกส์ (Function)</h3>
+                <p id="inspFunctionText" class="insp-spec-body"></p>
+              </div>
+
+              <div class="insp-spec-block insp-interlock-box">
+                <h3 class="insp-spec-label" data-i18n="labelInterlock">การเชื่อมโยงระบบอัตโนมัติ (System Interlock)</h3>
+                <p id="inspInterlockText" class="insp-spec-body"></p>
+              </div>
+            </div>
+
+            <!-- Real Hardware Photo Grid in This Zone -->
+            <div class="insp-gallery-section">
+              <div class="insp-sub-heading" data-i18n="labelZoneHardware">ตัวอุปกรณ์จริงทั้งหมดในโซนนี้</div>
+              <div id="inspZoneGallery" class="insp-zone-gallery"></div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL 1: Complete Real Hardware & Standards Catalog -->
+  <div id="catalogModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="catalogModalTitle">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <div class="modal-eyebrow" data-i18n="catalogEyebrow">คลังข้อมูลอุปกรณ์อิเล็กทรอนิกส์เพื่อความปลอดภัยในโรงแรม</div>
+          <h2 id="catalogModalTitle" class="modal-title" data-i18n="catalogTitle">รวมตัวอุปกรณ์จริง หน้าที่ และมาตรฐานการติดตั้งครบทั้ง 4 โซน</h2>
+        </div>
+        <button type="button" id="closeCatalogBtn" class="modal-close-btn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-filter-bar" id="catalogFilterBar"></div>
+
+      <div class="modal-content-scroll">
+        <div id="catalogCardsGrid" class="catalog-grid"></div>
+
+        <!-- Standards Quick Reference Summary -->
+        <section class="standards-summary-box" id="standardsSummarySection">
+          <h3 class="standards-box-title" data-i18n="standardsTitle">สรุปเกณฑ์วิศวกรรมและกฎหมายที่เกี่ยวข้อง (วสท. 021002-24 / กฎกระทรวงโรงแรม / NFPA 72)</h3>
+          <div id="standardsCardsRow" class="standards-cards-row"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: High-Resolution Real Hardware Lightbox -->
+  <div id="lightboxModal" class="modal-backdrop lightbox-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="lightbox-card">
+      <button type="button" id="closeLightboxBtn" class="modal-close-btn lightbox-close" aria-label="Close">✕</button>
+      <div class="lightbox-img-wrap">
+        <img id="lightboxImg" src="" alt="Enlarged Hardware View" />
+      </div>
+      <div class="lightbox-caption">
+        <h3 id="lightboxTitle"></h3>
+        <p id="lightboxSub"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/data.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
